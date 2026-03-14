@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import useAuth from '../../hooks/useAuth'
 import './Register.css'
 
 function Register() {
+    const navigate = useNavigate()
+    const { register } = useAuth()
+
     const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -12,6 +16,7 @@ function Register() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState({})
+    const [submitError, setSubmitError] = useState('')
 
     /* ---- Password strength ---- */
     const getPasswordStrength = (pwd) => {
@@ -64,11 +69,16 @@ function Register() {
         if (!validateForm()) return
 
         setIsLoading(true)
-        // Simülasyon — ileride backend'e bağlanacak
-        setTimeout(() => {
+        setSubmitError('')
+
+        try {
+            await register({ email, password, displayName: fullName.trim() })
+            navigate('/app', { replace: true })
+        } catch (error) {
+            setSubmitError(error?.message || 'Kayit sirasinda bir hata olustu')
+        } finally {
             setIsLoading(false)
-            console.log('Kayıt yapılıyor:', { fullName, email })
-        }, 1500)
+        }
     }
 
     /* ---- Eye toggle SVGs ---- */
@@ -177,6 +187,12 @@ function Register() {
                         </div>
 
                         <form className="register-form" onSubmit={handleSubmit} noValidate>
+                            {submitError && (
+                                <div className="reg-form-error" role="alert" style={{ marginBottom: '0.75rem', display: 'block' }}>
+                                    {submitError}
+                                </div>
+                            )}
+
                             {/* Full Name */}
                             <div className={`reg-form-group ${errors.fullName ? 'reg-form-group--error' : ''}`}>
                                 <label htmlFor="fullName" className="reg-form-label">Ad Soyad</label>

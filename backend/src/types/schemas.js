@@ -13,6 +13,17 @@ export const registerSchema = Joi.object({
     displayName: Joi.string().max(50).allow('').optional(),
 });
 
+export const loginSchema = Joi.object({
+    email: Joi.string().email().required().messages({
+        'string.email': 'Geçerli bir e-posta adresi giriniz',
+        'any.required': 'E-posta adresi gereklidir',
+    }),
+    password: Joi.string().min(6).required().messages({
+        'string.min': 'Şifre en az 6 karakter olmalıdır',
+        'any.required': 'Şifre gereklidir',
+    }),
+});
+
 export const moodSchema = Joi.object({
     mood: Joi.string()
         .valid(...availableMoods)

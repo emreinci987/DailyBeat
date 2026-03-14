@@ -6,6 +6,20 @@
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const TOKEN_STORAGE_KEY = 'dailybeat_token';
+
+export function getStoredToken() {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+export function setStoredToken(token) {
+    if (!token) return;
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+export function clearStoredToken() {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
 
 async function request(endpoint, options = {}) {
     const url = `${BASE_URL}${endpoint}`;
@@ -16,7 +30,7 @@ async function request(endpoint, options = {}) {
     };
 
     // Attach auth token if available
-    const token = localStorage.getItem('dailybeat_token');
+    const token = getStoredToken();
     if (token) {
         headers.Authorization = `Bearer ${token}`;
     }
@@ -37,6 +51,7 @@ async function request(endpoint, options = {}) {
 // ── Auth ──
 export const authAPI = {
     register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+    login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
     me: () => request('/auth/me'),
 };
 
