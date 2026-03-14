@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import './Login.css'
 
 function Login() {
@@ -233,7 +234,7 @@ function Login() {
 
                         <p className="login-footer">
                             Hesabınız yok mu?{' '}
-                            <a href="#" className="signup-link">Kayıt Ol</a>
+                            <Link to="/register" className="signup-link">Kayıt Ol</Link>
                         </p>
                     </div>
                 </div>
