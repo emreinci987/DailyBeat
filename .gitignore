@@ -43,6 +43,10 @@ Desktop.ini
 coverage/
 .nyc_output/
 
+# Firebase service-account keys (never commit)
+**/firebase-service-account.json
+**/serviceAccountKey.json
+
 # ============================================================
 # Java / JVM
 # ============================================================
