@@ -40,7 +40,7 @@ function Register() {
     const validateForm = () => {
         const newErrors = {}
         if (!fullName.trim()) {
-            newErrors.fullName = 'Ad Soyad gereklidir'
+            newErrors.fullName = 'Kullanıcı ismi gereklidir'
         }
         if (!email) {
             newErrors.email = 'E-posta adresi gereklidir'
@@ -195,7 +195,7 @@ function Register() {
 
                             {/* Full Name */}
                             <div className={`reg-form-group ${errors.fullName ? 'reg-form-group--error' : ''}`}>
-                                <label htmlFor="fullName" className="reg-form-label">Ad Soyad</label>
+                                <label htmlFor="fullName" className="reg-form-label">Kullanıcı Adı</label>
                                 <div className="reg-input-wrapper">
                                     <svg className="reg-input-icon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
                                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -204,10 +204,10 @@ function Register() {
                                         id="fullName"
                                         type="text"
                                         className="reg-form-input"
-                                        placeholder="Adınız Soyadınız"
+                                        placeholder="Kullanıcı Adınız"
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        autoComplete="name"
+                                        autoComplete="username"
                                     />
                                 </div>
                                 {errors.fullName && <span className="reg-form-error">{errors.fullName}</span>}
