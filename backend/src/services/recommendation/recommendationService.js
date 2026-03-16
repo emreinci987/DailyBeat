@@ -1,4 +1,4 @@
-import { getMoodMapping } from '../../utils/moodMapping.js';
+import MoodProfile from '../../utils/moodMapping.js';
 import { getSpotifyRecommendations, searchYouTubeVideos } from '../music/musicService.js';
 import Playlist from '../../models/Playlist.js';
 import logger from '../../utils/logger.js';
@@ -9,17 +9,13 @@ import logger from '../../utils/logger.js';
  */
 
 export async function getRecommendations(mood, { limit = 10, save = false, userId = null } = {}) {
-    const mapping = getMoodMapping(mood);
+    const moodProfile = new MoodProfile(mood);
     let songs = [];
 
     // Try Spotify first
     try {
-        songs = await getSpotifyRecommendations({
-            genres: mapping.genres,
-            valence: mapping.valence,
-            energy: mapping.energy,
-            limit,
-        });
+        const spotifySeed = moodProfile.toSpotifySeed();
+        songs = await getSpotifyRecommendations({ ...spotifySeed, limit });
     } catch (err) {
         logger.warn('Spotify recommendations failed, falling back to YouTube', { error: err.message });
     }
@@ -27,7 +23,7 @@ export async function getRecommendations(mood, { limit = 10, save = false, userI
     // Fallback / supplement with YouTube
     if (songs.length < limit) {
         try {
-            const keyword = mapping.keywords[Math.floor(Math.random() * mapping.keywords.length)];
+            const keyword = moodProfile.getRandomKeyword();
             const ytResults = await searchYouTubeVideos(`${keyword} music`, limit - songs.length);
             songs = [...songs, ...ytResults];
         } catch (err) {
