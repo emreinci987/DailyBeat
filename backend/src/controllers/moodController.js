@@ -1,6 +1,7 @@
 import * as moodService from '../services/mood/moodService.js';
-import { successResponse, errorResponse, paginatedResponse } from '../utils/apiResponse.js';
+import { successResponse, errorResponse } from '../utils/apiResponse.js';
 import { availableMoods } from '../utils/moodMapping.js';
+import { HistoryFormatter } from '../utils/historyFormatter.js';
 
 /**
  * POST /api/mood
@@ -15,6 +16,8 @@ export async function createMood(req, res, next) {
     }
 }
 
+import { HistoryFormatter } from '../utils/historyFormatter.js';
+
 /**
  * GET /api/mood/history?limit=30&offset=0
  */
@@ -23,7 +26,13 @@ export async function getHistory(req, res, next) {
         const limit = Math.min(parseInt(req.query.limit, 10) || 30, 100);
         const offset = parseInt(req.query.offset, 10) || 0;
         const entries = await moodService.getUserMoodHistory(req.user.uid, { limit, offset });
-        return paginatedResponse(res, entries, Math.floor(offset / limit) + 1, limit, entries.length);
+
+        // Format data using the new formatter
+        const formattedData = HistoryFormatter.formatMoodHistory(entries);
+
+        // The paginatedResponse might not be suitable anymore if we send a complex object.
+        // Let's use successResponse for now.
+        return successResponse(res, formattedData);
     } catch (error) {
         return next(error);
     }
