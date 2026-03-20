@@ -16,8 +16,6 @@ export async function createMood(req, res, next) {
     }
 }
 
-import { HistoryFormatter } from '../utils/historyFormatter.js';
-
 /**
  * GET /api/mood/history?limit=30&offset=0
  */
