@@ -4,6 +4,7 @@ import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import Home from './pages/Home/Home'
 import EmotionPage from './pages/MoodPicker/EmotionPage'
+import SuggestionsPage from './pages/Recommendations/SuggestionsPage'
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute'
 
 function AuthRedirect({ children }) {
@@ -46,6 +47,14 @@ function App() {
                 element={(
                     <ProtectedRoute>
                         <EmotionPage />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/suggestions"
+                element={(
+                    <ProtectedRoute>
+                        <SuggestionsPage />
                     </ProtectedRoute>
                 )}
             />
