@@ -3,6 +3,7 @@ import useAuth from './hooks/useAuth'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import Home from './pages/Home/Home'
+import EmotionPage from './pages/MoodPicker/EmotionPage'
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute'
 
 function AuthRedirect({ children }) {
@@ -37,6 +38,14 @@ function App() {
                 element={(
                     <ProtectedRoute>
                         <Home />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/mood"
+                element={(
+                    <ProtectedRoute>
+                        <EmotionPage />
                     </ProtectedRoute>
                 )}
             />
