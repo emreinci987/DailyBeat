@@ -3,31 +3,83 @@
  * @description DailyBeat — Temel Fonksiyon Testleri
  */
 
-import { getMoodProfile, lerp } from '../../services/recommendation/engine.js';
-import { toDateKey }            from '../../services/mood/historyFormatter.js';
+import { describe, test, expect } from '@jest/globals';
+import MoodProfile, { availableMoods } from '../src/utils/moodMapping.js';
+import { HistoryFormatter } from '../src/utils/historyFormatter.js';
 
-// ── lerp ──────────────────────────────────────────────────────────────────────
-describe('lerp()', () => {
-  test('0 verince başlangıcı döndürür',  () => expect(lerp(0, 100, 0)).toBe(0));
-  test('1 verince bitişi döndürür',      () => expect(lerp(0, 100, 1)).toBe(100));
-  test('0.5 verince ortayı döndürür',    () => expect(lerp(0, 100, 0.5)).toBe(50));
+// ── MoodProfile ───────────────────────────────────────────────────────────────
+describe('MoodProfile', () => {
+    test('happy → yüksek valence', () => {
+        const profile = new MoodProfile('happy');
+        expect(profile.targetValence).toBeGreaterThanOrEqual(0.7);
+    });
+
+    test('sad → düşük valence', () => {
+        const profile = new MoodProfile('sad');
+        expect(profile.targetValence).toBeLessThanOrEqual(0.3);
+    });
+
+    test('calm → düşük energy', () => {
+        const profile = new MoodProfile('calm');
+        expect(profile.targetEnergy).toBeLessThanOrEqual(0.3);
+    });
+
+    test('genres dizisi dönüyor', () => {
+        const profile = new MoodProfile('energetic');
+        expect(Array.isArray(profile.genres)).toBe(true);
+        expect(profile.genres.length).toBeGreaterThan(0);
+    });
+
+    test('geçersiz giriş calm\'a düşüyor', () => {
+        const profile = new MoodProfile('nonexistent');
+        const calm = new MoodProfile('calm');
+        expect(profile.genres).toEqual(calm.genres);
+    });
+
+    test('toSpotifySeed doğru format', () => {
+        const seed = new MoodProfile('happy').toSpotifySeed();
+        expect(seed).toHaveProperty('seed_genres');
+        expect(seed).toHaveProperty('target_valence');
+        expect(seed).toHaveProperty('target_energy');
+    });
 });
 
-// ── getMoodProfile ────────────────────────────────────────────────────────────
-describe('getMoodProfile()', () => {
-  test('1 → düşük valence',  () => expect(getMoodProfile(1).valence).toBeLessThan(0.2));
-  test('5 → orta valence',   () => expect(getMoodProfile(5).valence).toBeCloseTo(0.5, 1));
-  test('10 → yüksek valence',() => expect(getMoodProfile(10).valence).toBeGreaterThan(0.9));
-  test('etiket dönüyor',     () => expect(getMoodProfile(7)).toHaveProperty('label'));
-  test('geçersiz giriş hata',() => expect(() => getMoodProfile(11)).toThrow());
+// ── HistoryFormatter ──────────────────────────────────────────────────────────
+describe('HistoryFormatter', () => {
+    const mockEntries = [
+        { mood: 'happy', intensity: 8, timestamp: '2024-01-15T10:00:00Z' },
+        { mood: 'sad', intensity: 3, timestamp: '2024-01-16T12:00:00Z' },
+        { mood: 'happy', intensity: 7, timestamp: '2024-01-17T14:00:00Z' },
+    ];
+
+    test('normalizeTimestamps ISO formatında döndürüyor', () => {
+        const normalized = HistoryFormatter.normalizeTimestamps(mockEntries);
+        for (const entry of normalized) {
+            expect(entry.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+        }
+    });
+
+    test('calculateSummary doğru sonuç', () => {
+        const summary = HistoryFormatter.calculateSummary(mockEntries);
+        expect(summary.totalEntries).toBe(3);
+        expect(summary.moodDistribution.happy).toBe(2);
+        expect(summary.moodDistribution.sad).toBe(1);
+    });
+
+    test('toChartJSFormat labels ve datasets içeriyor', () => {
+        const chart = HistoryFormatter.toChartJSFormat(mockEntries);
+        expect(chart.labels).toHaveLength(3);
+        expect(chart.datasets).toHaveLength(1);
+        expect(chart.datasets[0].data).toEqual([8, 3, 7]);
+    });
 });
 
-// ── toDateKey ─────────────────────────────────────────────────────────────────
-describe('toDateKey()', () => {
-  test('YYYY-MM-DD formatında dönüyor', () => {
-    expect(toDateKey(new Date('2024-01-15'))).toBe('2024-01-15');
-  });
-  test('ay tek haneliyse sıfır ekliyor', () => {
-    expect(toDateKey(new Date('2024-03-07'))).toBe('2024-03-07');
-  });
+// ── availableMoods ────────────────────────────────────────────────────────────
+describe('availableMoods', () => {
+    test('tüm beklenen mood\'lar listede', () => {
+        expect(availableMoods).toContain('happy');
+        expect(availableMoods).toContain('sad');
+        expect(availableMoods).toContain('calm');
+        expect(availableMoods).toContain('energetic');
+    });
 });
