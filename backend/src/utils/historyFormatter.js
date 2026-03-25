@@ -20,6 +20,15 @@
  */
 export class HistoryFormatter {
     /**
+     * Accept both createdAt (current model) and timestamp (legacy shape).
+     * @param {MoodEntryData} entry
+     * @returns {string}
+     */
+    static resolveTimestamp(entry) {
+        return entry.createdAt || entry.timestamp;
+    }
+
+    /**
      * Normalizes timestamps in the mood data.
      * @param {MoodEntryData[]} entries - The raw mood entries from the database.
      * @returns {MoodEntryData[]}
@@ -27,7 +36,7 @@ export class HistoryFormatter {
     static normalizeTimestamps(entries) {
         return entries.map((entry) => ({
             ...entry,
-            timestamp: new Date(entry.timestamp).toISOString(),
+            timestamp: new Date(this.resolveTimestamp(entry)).toISOString(),
         }));
     }
 
@@ -45,7 +54,9 @@ export class HistoryFormatter {
         return {
             totalEntries: entries.length,
             // Simple period calculation, can be enhanced
-            period: entries.length > 0 ? `${new Date(entries[entries.length - 1].timestamp).toLocaleDateString()} - ${new Date(entries[0].timestamp).toLocaleDateString()}` : 'N/A',
+            period: entries.length > 0
+                ? `${new Date(entries[entries.length - 1].timestamp).toLocaleDateString()} - ${new Date(entries[0].timestamp).toLocaleDateString()}`
+                : 'N/A',
             moodDistribution,
         };
     }
