@@ -1,13 +1,20 @@
 import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import useAuth from '../../hooks/useAuth'
 import './Login.css'
 
 function Login() {
+    const navigate = useNavigate()
+    const location = useLocation()
+    const { login } = useAuth()
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [rememberMe, setRememberMe] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState({})
+    const [submitError, setSubmitError] = useState('')
 
     const validateForm = () => {
         const newErrors = {}
@@ -30,11 +37,17 @@ function Login() {
         if (!validateForm()) return
 
         setIsLoading(true)
-        // Simülasyon — ileride Firebase Auth entegre edilecek
-        setTimeout(() => {
+        setSubmitError('')
+
+        try {
+            await login({ email, password })
+            const redirectTo = location.state?.from || '/app'
+            navigate(redirectTo, { replace: true })
+        } catch (error) {
+            setSubmitError(error?.message || 'Giris yapilirken bir hata olustu')
+        } finally {
             setIsLoading(false)
-            console.log('Giriş yapılıyor:', { email, rememberMe })
-        }, 1500)
+        }
     }
 
     return (
@@ -129,6 +142,12 @@ function Login() {
                         </div>
 
                         <form className="login-form" onSubmit={handleSubmit} noValidate>
+                            {submitError && (
+                                <div className="form-error" role="alert" style={{ marginBottom: '0.75rem', display: 'block' }}>
+                                    {submitError}
+                                </div>
+                            )}
+
                             <div className={`form-group ${errors.email ? 'form-group--error' : ''}`}>
                                 <label htmlFor="email" className="form-label">E-posta</label>
                                 <div className="input-wrapper">
@@ -233,7 +252,7 @@ function Login() {
 
                         <p className="login-footer">
                             Hesabınız yok mu?{' '}
-                            <a href="#" className="signup-link">Kayıt Ol</a>
+                            <Link to="/register" className="signup-link">Kayıt Ol</Link>
                         </p>
                     </div>
                 </div>
