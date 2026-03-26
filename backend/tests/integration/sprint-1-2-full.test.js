@@ -271,6 +271,20 @@ jest.unstable_mockModule('../../src/utils/logger.js', () => ({
     },
 }));
 
+jest.unstable_mockModule('../../src/config/environment.js', () => ({
+    default: {
+        firebaseClient: {
+            apiKey: 'test-api-key',
+        },
+        nodeEnv: 'test',
+        corsOrigin: 'http://localhost:5173',
+        rateLimit: {
+            windowMs: 15 * 60 * 1000,
+            max: 100,
+        },
+    },
+}));
+
 // Mock music service
 jest.unstable_mockModule('../../src/services/music/musicService.js', () => ({
     searchSpotifyTracks: jest.fn(async () => [
