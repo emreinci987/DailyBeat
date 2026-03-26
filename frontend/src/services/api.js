@@ -87,4 +87,14 @@ export const userAPI = {
     deletePlaylist: (id) => request(`/users/playlists/${id}`, { method: 'DELETE' }),
 };
 
-export default { authAPI, moodAPI, musicAPI, recommendationAPI, userAPI };
+// ── Feedback ──
+export const feedbackAPI = {
+    create: (body) => request('/feedback', { method: 'POST', body: JSON.stringify(body) }),
+    list: (params = {}) => {
+        const qs = new URLSearchParams(params).toString();
+        return request(`/feedback?${qs}`);
+    },
+    remove: (id) => request(`/feedback/${id}`, { method: 'DELETE' }),
+};
+
+export default { authAPI, moodAPI, musicAPI, recommendationAPI, userAPI, feedbackAPI };

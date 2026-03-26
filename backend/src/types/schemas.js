@@ -52,3 +52,21 @@ export const updateProfileSchema = Joi.object({
         language: Joi.string().max(5).optional(),
     }).optional(),
 });
+
+export const feedbackSchema = Joi.object({
+    songUrl: Joi.string().uri().required().messages({
+        'string.uri': 'Geçerli bir şarkı URL\'si giriniz',
+        'any.required': 'Şarkı URL\'si gereklidir',
+    }),
+    songTitle: Joi.string().max(200).allow('').optional(),
+    songArtist: Joi.string().max(200).allow('').optional(),
+    rating: Joi.number().integer().min(1).max(3).required().messages({
+        'number.min': 'Puan 1-3 arasında olmalıdır',
+        'number.max': 'Puan 1-3 arasında olmalıdır',
+        'any.required': 'Puan gereklidir',
+    }),
+    mood: Joi.string()
+        .valid(...availableMoods)
+        .optional(),
+    comment: Joi.string().max(500).allow('').default(''),
+});

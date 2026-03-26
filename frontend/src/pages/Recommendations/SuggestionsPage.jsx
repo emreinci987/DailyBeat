@@ -156,10 +156,10 @@ function SuggestionsPage() {
                                     style={{ animationDelay: `${index * 0.08}s` }}
                                 >
                                     <div className="sug-song-card__index">{index + 1}</div>
-                                    {song.thumbnail && (
+                                    {song.thumbnailUrl && (
                                         <img
                                             className="sug-song-card__thumb"
-                                            src={song.thumbnail}
+                                            src={song.thumbnailUrl}
                                             alt={song.title}
                                             loading="lazy"
                                         />

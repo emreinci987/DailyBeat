@@ -14,6 +14,7 @@ import moodRoutes from './routes/mood.js';
 import musicRoutes from './routes/music.js';
 import recommendationRoutes from './routes/recommendations.js';
 import userRoutes from './routes/users.js';
+import feedbackRoutes from './routes/feedback.js';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/mood', moodRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

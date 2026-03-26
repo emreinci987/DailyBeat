@@ -110,7 +110,14 @@ export async function getSpotifyRecommendations({
     });
 
     if (!res.ok) {
-        logger.error('Spotify recommendations failed', { status: res.status });
+        // Fallback: IfRecommendations API is restricted (403/404), use Search API
+        if (res.status === 403 || res.status === 404) {
+            logger.info('Spotify recommendations endpoint restricted, falling back to search-based approach', { genreList });
+            // Use the first 2 genres as search query for better precision
+            const query = genreList.split(',').slice(0, 2).join(' ');
+            return searchSpotifyTracks(query, limit);
+        }
+        logger.error('Spotify recommendations failed', { status: res.status, url: url.toString() });
         return [];
     }
 
