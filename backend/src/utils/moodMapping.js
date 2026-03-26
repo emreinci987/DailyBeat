@@ -4,10 +4,10 @@
 
 const moodMap = {
     happy: {
-        genres: ['pop', 'dance', 'happy'],
+        genres: ['pop', 'dance', 'disco'],
         target_valence: 0.8,
         target_energy: 0.7,
-        keywords: ['happy', 'upbeat', 'feel good'],
+        keywords: ['upbeat', 'feel good'],
     },
     sad: {
         genres: ['acoustic', 'piano', 'sad'],

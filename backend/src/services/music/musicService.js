@@ -63,28 +63,47 @@ export async function searchSpotifyTracks(query, limit = 10) {
     }
 
     const data = await res.json();
-    return (data.tracks?.items || []).map((t) => ({
-        title: t.name,
-        artist: t.artists.map((a) => a.name).join(', '),
-        album: t.album.name,
-        url: t.external_urls.spotify,
-        thumbnailUrl: t.album.images?.[0]?.url || '',
-        previewUrl: t.preview_url || '',
-        source: 'spotify',
-    }));
+    return (data.tracks?.items || []).map(formatTrack);
 }
 
-export async function getSpotifyRecommendations({ genres, valence, energy, limit = 10 }) {
+/**
+ * Get Spotify recommendations based on mood profile seed.
+ *
+ * Accepts the output of MoodProfile.toSpotifySeed() directly:
+ *   {
+ *     seed_genres: "pop,dance,happy",   // comma-separated string
+ *     target_valence: 0.8,              // single number 0.0–1.0
+ *     target_energy: 0.7,               // single number 0.0–1.0
+ *   }
+ *
+ * @param {object} params
+ * @param {string} params.seed_genres    - Comma-separated genre string (max 5)
+ * @param {number} params.target_valence - Target valence 0.0–1.0
+ * @param {number} params.target_energy  - Target energy 0.0–1.0
+ * @param {number} [params.limit=10]     - Number of tracks to return
+ */
+export async function getSpotifyRecommendations({
+    seed_genres,
+    target_valence,
+    target_energy,
+    limit = 10,
+}) {
     const token = await getSpotifyToken();
     if (!token) return [];
 
     const url = new URL('https://api.spotify.com/v1/recommendations');
-    url.searchParams.set('seed_genres', genres.slice(0, 5).join(','));
-    url.searchParams.set('min_valence', String(valence[0]));
-    url.searchParams.set('max_valence', String(valence[1]));
-    url.searchParams.set('min_energy', String(energy[0]));
-    url.searchParams.set('max_energy', String(energy[1]));
-    url.searchParams.set('limit', String(limit));
+
+    // seed_genres: moodMapping zaten string döndürüyor, max 5 genre al
+    const genreList = seed_genres
+        .split(',')
+        .map((g) => g.trim())
+        .slice(0, 5)
+        .join(',');
+
+    url.searchParams.set('seed_genres',    genreList);
+    url.searchParams.set('target_valence', String(target_valence));
+    url.searchParams.set('target_energy',  String(target_energy));
+    url.searchParams.set('limit',          String(Math.min(limit, 100)));
 
     const res = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${token}` },
@@ -96,15 +115,7 @@ export async function getSpotifyRecommendations({ genres, valence, energy, limit
     }
 
     const data = await res.json();
-    return (data.tracks || []).map((t) => ({
-        title: t.name,
-        artist: t.artists.map((a) => a.name).join(', '),
-        album: t.album.name,
-        url: t.external_urls.spotify,
-        thumbnailUrl: t.album.images?.[0]?.url || '',
-        previewUrl: t.preview_url || '',
-        source: 'spotify',
-    }));
+    return (data.tracks || []).map(formatTrack);
 }
 
 // ── YouTube helpers ──────────────────────────────────────────
@@ -117,12 +128,12 @@ export async function searchYouTubeVideos(query, limit = 10) {
     }
 
     const url = new URL('https://www.googleapis.com/youtube/v3/search');
-    url.searchParams.set('part', 'snippet');
-    url.searchParams.set('type', 'video');
+    url.searchParams.set('part',            'snippet');
+    url.searchParams.set('type',            'video');
     url.searchParams.set('videoCategoryId', '10'); // Music
-    url.searchParams.set('q', query);
-    url.searchParams.set('maxResults', String(limit));
-    url.searchParams.set('key', apiKey);
+    url.searchParams.set('q',              query);
+    url.searchParams.set('maxResults',     String(limit));
+    url.searchParams.set('key',            apiKey);
 
     const res = await fetch(url.toString());
 
@@ -133,12 +144,32 @@ export async function searchYouTubeVideos(query, limit = 10) {
 
     const data = await res.json();
     return (data.items || []).map((item) => ({
-        title: item.snippet.title,
-        artist: item.snippet.channelTitle,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        title:        item.snippet.title,
+        artist:       item.snippet.channelTitle,
+        album:        null,
+        url:          `https://www.youtube.com/watch?v=${item.id.videoId}`,
         thumbnailUrl: item.snippet.thumbnails?.high?.url || '',
-        source: 'youtube',
+        previewUrl:   null,
+        source:       'youtube',
     }));
+}
+
+// ── Shared formatter ─────────────────────────────────────────
+
+/**
+ * Normalizes a raw Spotify track object into the app's SongRecommendation format.
+ * @param {object} t - Raw Spotify track object
+ */
+function formatTrack(t) {
+    return {
+        title:        t.name,
+        artist:       t.artists.map((a) => a.name).join(', '),
+        album:        t.album.name,
+        url:          t.external_urls.spotify,
+        thumbnailUrl: t.album.images?.[0]?.url || '',
+        previewUrl:   t.preview_url || '',
+        source:       'spotify',
+    };
 }
 
 export default { searchSpotifyTracks, getSpotifyRecommendations, searchYouTubeVideos };
