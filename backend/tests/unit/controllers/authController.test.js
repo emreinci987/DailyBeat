@@ -30,6 +30,14 @@ jest.unstable_mockModule('../../../src/utils/logger.js', () => ({
     },
 }))
 
+jest.unstable_mockModule('../../../src/config/environment.js', () => ({
+    default: {
+        firebaseClient: {
+            apiKey: 'test-api-key',
+        },
+    },
+}))
+
 const { register, login } = await import('../../../src/controllers/authController.js')
 
 function mockRes() {
