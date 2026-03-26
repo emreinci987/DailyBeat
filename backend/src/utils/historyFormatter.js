@@ -27,7 +27,7 @@ export class HistoryFormatter {
     static normalizeTimestamps(entries) {
         return entries.map((entry) => ({
             ...entry,
-            timestamp: new Date(entry.timestamp).toISOString(),
+            timestamp: new Date(entry.createdAt).toISOString(),
         }));
     }
 
