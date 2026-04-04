@@ -5,6 +5,10 @@ import Register from './pages/Auth/Register'
 import Home from './pages/Home/Home'
 import EmotionPage from './pages/MoodPicker/EmotionPage'
 import SuggestionsPage from './pages/Recommendations/SuggestionsPage'
+import HistoryPage from './pages/History/HistoryPage'
+import DiscoveryPage from './pages/Discovery/DiscoveryPage'
+import ProfilePage from './pages/Profile/ProfilePage'
+import SongRecommendPage from './pages/SongRecommend/SongRecommendPage'
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute'
 
 function AuthRedirect({ children }) {
@@ -55,6 +59,38 @@ function App() {
                 element={(
                     <ProtectedRoute>
                         <SuggestionsPage />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/history"
+                element={(
+                    <ProtectedRoute>
+                        <HistoryPage />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/discovery"
+                element={(
+                    <ProtectedRoute>
+                        <DiscoveryPage />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/profile"
+                element={(
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                )}
+            />
+            <Route
+                path="/app/recommend"
+                element={(
+                    <ProtectedRoute>
+                        <SongRecommendPage />
                     </ProtectedRoute>
                 )}
             />
