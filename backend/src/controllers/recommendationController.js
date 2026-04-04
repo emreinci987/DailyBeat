@@ -7,8 +7,9 @@ import { successResponse } from '../utils/apiResponse.js';
  */
 export async function getRecommendations(req, res, next) {
     try {
-        const { mood, limit = 10, save = false } = req.body;
+        const { mood, intensity = 5, limit = 10, save = false } = req.body;
         const result = await recommendationService.getRecommendations(mood, {
+            intensity,
             limit,
             save,
             userId: req.user.uid,
