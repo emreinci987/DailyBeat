@@ -1,0 +1,23 @@
+/* ===== App Layout ===== */
+/* Wraps protected pages with sidebar navigation */
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-layout__content {
+    flex: 1;
+    margin-left: 68px;
+    min-height: 100vh;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When sidebar is expanded, content doesn't shift — sidebar overlays on desktop */
+
+@media (max-width: 768px) {
+    .app-layout__content {
+        margin-left: 0;
+        padding-bottom: 72px; /* space for bottom nav */
+    }
+}
