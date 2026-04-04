@@ -19,6 +19,8 @@
  * Formats raw mood history data for client-side consumption, especially for charts.
  */
 export class HistoryFormatter {
+    static TURKISH_WEEK_DAYS = ['Pazar', 'Pazartesi', 'Sali', 'Carsamba', 'Persembe', 'Cuma', 'Cumartesi'];
+
     /**
      * Accept both createdAt (current model) and timestamp (legacy shape).
      * @param {MoodEntryData} entry
@@ -34,10 +36,27 @@ export class HistoryFormatter {
      * @returns {MoodEntryData[]}
      */
     static normalizeTimestamps(entries) {
-        return entries.map((entry) => ({
-            ...entry,
-            timestamp: new Date(this.resolveTimestamp(entry)).toISOString(),
-        }));
+        const normalized = [];
+
+        for (const entry of entries) {
+            const rawTimestamp = this.resolveTimestamp(entry);
+            if (!rawTimestamp) continue;
+
+            const parsedDate = rawTimestamp?.toDate instanceof Function
+                ? rawTimestamp.toDate()
+                : new Date(rawTimestamp);
+
+            if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+                continue;
+            }
+
+            normalized.push({
+                ...entry,
+                timestamp: parsedDate.toISOString(),
+            });
+        }
+
+        return normalized;
     }
 
     /**
@@ -97,6 +116,100 @@ export class HistoryFormatter {
             summary: this.calculateSummary(sortedEntries),
             chartData: this.toChartJSFormat(sortedEntries),
             history: sortedEntries,
+        };
+    }
+
+    static isValidTimeZone(timezone) {
+        try {
+            Intl.DateTimeFormat('tr-TR', { timeZone: timezone });
+            return true;
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    static toDateKey(dateInput, timeZone = 'UTC') {
+        const parsedDate = new Date(dateInput);
+        if (Number.isNaN(parsedDate.getTime())) {
+            return null;
+        }
+
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+        const parts = formatter.formatToParts(parsedDate);
+        const year = parts.find((part) => part.type === 'year')?.value;
+        const month = parts.find((part) => part.type === 'month')?.value;
+        const day = parts.find((part) => part.type === 'day')?.value;
+
+        if (!year || !month || !day) {
+            return null;
+        }
+
+        return `${year}-${month}-${day}`;
+    }
+
+    static buildLast7DateKeys(timeZone = 'UTC') {
+        const keys = [];
+        const seen = new Set();
+        let cursor = new Date();
+
+        while (keys.length < 7) {
+            const key = this.toDateKey(cursor, timeZone);
+            if (key && !seen.has(key)) {
+                keys.unshift(key);
+                seen.add(key);
+            }
+            cursor = new Date(cursor.getTime() - 12 * 60 * 60 * 1000);
+        }
+
+        return keys;
+    }
+
+    static getTurkishDayName(dateKey) {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const weekdayIndex = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+        return this.TURKISH_WEEK_DAYS[weekdayIndex];
+    }
+
+    static formatWeeklyBreakdown(entries, timeZone = 'UTC') {
+        const normalizedEntries = this.normalizeTimestamps(entries);
+        const last7DateKeys = this.buildLast7DateKeys(timeZone);
+        const keySet = new Set(last7DateKeys);
+        const groupedByDay = Object.fromEntries(last7DateKeys.map((key) => [key, []]));
+
+        for (const entry of normalizedEntries) {
+            const dayKey = this.toDateKey(entry.timestamp, timeZone);
+            if (dayKey && keySet.has(dayKey)) {
+                groupedByDay[dayKey].push(entry);
+            }
+        }
+
+        const days = last7DateKeys.map((dayKey) => {
+            const dayEntries = groupedByDay[dayKey].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const moodCounts = dayEntries.reduce((acc, entry) => {
+                acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+                return acc;
+            }, {});
+
+            return {
+                date: dayKey,
+                dayName: this.getTurkishDayName(dayKey),
+                totalEntries: dayEntries.length,
+                moodCounts,
+            };
+        });
+
+        return {
+            period: {
+                startDate: last7DateKeys[0],
+                endDate: last7DateKeys[last7DateKeys.length - 1],
+                timezone: timeZone,
+            },
+            days,
         };
     }
 }

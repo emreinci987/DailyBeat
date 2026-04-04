@@ -1,7 +1,65 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { moodAPI } from '../../services/api'
 import './HistoryPage.css'
 
+const MOOD_LABELS_TR = {
+    happy: 'Mutlu',
+    sad: 'Uzgün',
+    energetic: 'Enerjik',
+    calm: 'Sakin',
+    angry: 'Kizgin',
+    romantic: 'Romantik',
+    anxious: 'Endiseli',
+    nostalgic: 'Nostaljik',
+    focused: 'Odaklanmis',
+}
+
+function formatMoodCounts(moodCounts) {
+    const pairs = Object.entries(moodCounts || {});
+    if (pairs.length === 0) return 'Kayit yok';
+
+    return pairs
+        .sort((a, b) => b[1] - a[1])
+        .map(([mood, count]) => `${count} ${MOOD_LABELS_TR[mood] || mood}`)
+        .join(', ');
+}
+
 function HistoryPage() {
+    const [days, setDays] = useState([])
+    const [period, setPeriod] = useState(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    const timezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', [])
+
+    useEffect(() => {
+        let cancelled = false
+
+        async function fetchHistory() {
+            setIsLoading(true)
+            setError(null)
+
+            try {
+                const response = await moodAPI.history({ limit: 30, offset: 0, timezone })
+                if (cancelled) return
+
+                const weekly = response?.data?.weeklyBreakdown
+                setPeriod(weekly?.period || null)
+                setDays(Array.isArray(weekly?.days) ? weekly.days : [])
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err?.message || 'Gecmis verileri yüklenemedi')
+                }
+            } finally {
+                if (!cancelled) setIsLoading(false)
+            }
+        }
+
+        fetchHistory()
+        return () => { cancelled = true }
+    }, [timezone])
+
     return (
         <div className="history-page">
             {/* Animated background */}
@@ -22,36 +80,45 @@ function HistoryPage() {
 
             {/* Main */}
             <main className="hist-main">
-                <div className="hist-coming-soon">
-                    <div className="hist-coming-soon__icon">📜</div>
-                    <div className="hist-coming-soon__badge">Yakında Gelecek</div>
-                    <h1 className="hist-coming-soon__title">
-                        Duygu <span>Geçmişin</span>
+                <div className="hist-card">
+                    <div className="hist-card__icon">📜</div>
+                    <div className="hist-card__badge">Son 7 Gün</div>
+                    <h1 className="hist-card__title">
+                        Duygu <span>Gecmisin</span>
                     </h1>
-                    <p className="hist-coming-soon__desc">
-                        Tüm duygu kayıtlarını ve müzik önerilerini burada görebileceksin. Bu özellik üzerinde çalışıyoruz!
-                    </p>
 
-                    {/* Progress bar */}
-                    <div className="hist-progress-bar">
-                        <div className="hist-progress-bar__fill"></div>
-                    </div>
+                    {period && (
+                        <p className="hist-card__period">
+                            {period.startDate} - {period.endDate} ({period.timezone})
+                        </p>
+                    )}
 
-                    {/* Feature preview */}
-                    <div className="hist-features">
-                        <div className="hist-feature">
-                            <span className="hist-feature__icon">📊</span>
-                            <span className="hist-feature__text">Duygu değişim grafiğini takip et</span>
+                    {isLoading ? (
+                        <div className="hist-loading" role="status" aria-live="polite">
+                            <div className="hist-loading__spinner"></div>
+                            <p>Geçmis yükleniyor...</p>
                         </div>
-                        <div className="hist-feature">
-                            <span className="hist-feature__icon">🎵</span>
-                            <span className="hist-feature__text">Önceki müzik önerilerini tekrar dinle</span>
+                    ) : error ? (
+                        <div className="hist-error" role="alert">
+                            <p>{error}</p>
+                            <button type="button" className="hist-error__retry" onClick={() => window.location.reload()}>
+                                Tekrar Dene
+                            </button>
                         </div>
-                        <div className="hist-feature">
-                            <span className="hist-feature__icon">📅</span>
-                            <span className="hist-feature__text">Günlük ve haftalık ruh hali özeti</span>
+                    ) : days.length === 0 ? (
+                        <div className="hist-empty">
+                            <p>Bu hafta için duygu kaydi bulunamadi.</p>
                         </div>
-                    </div>
+                    ) : (
+                        <ul className="hist-list" aria-label="Son 7 gün duygu sayimlari">
+                            {days.map((day) => (
+                                <li key={day.date} className="hist-list__item">
+                                    <span className="hist-list__day">{day.dayName}</span>
+                                    <span className="hist-list__counts">{formatMoodCounts(day.moodCounts)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
 
                     <Link to="/app" className="hist-back-link">
                         <span>🏠 Ana Sayfaya Dön</span>

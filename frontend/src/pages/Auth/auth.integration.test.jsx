@@ -48,7 +48,7 @@ describe('auth screens integration', () => {
         await user.type(screen.getByLabelText(/^şifre$/i), '123456')
         await user.click(screen.getByRole('button', { name: /^giriş yap$/i }))
 
-        expect(await screen.findByText(/Hos geldin/i)).toBeInTheDocument()
+        expect(await screen.findByText(/Hoş Geldin/i)).toBeInTheDocument()
     })
 
     it('should register, auto-login and redirect user to protected app page', async () => {
@@ -85,13 +85,13 @@ describe('auth screens integration', () => {
 
         const user = userEvent.setup()
 
-        await user.type(await screen.findByLabelText(/ad soyad/i), 'New User')
+        await user.type(await screen.findByLabelText(/kullanıcı adı/i), 'New User')
         await user.type(screen.getByLabelText(/e-posta/i), 'new@example.com')
         await user.type(screen.getByLabelText(/^şifre$/i), '123456')
         await user.type(screen.getByLabelText(/şifre tekrarı/i), '123456')
         await user.click(screen.getByRole('checkbox'))
         await user.click(screen.getByRole('button', { name: /^kayıt ol$/i }))
 
-        expect(await screen.findByText(/Hos geldin/i)).toBeInTheDocument()
+        expect(await screen.findByText(/Hoş Geldin/i)).toBeInTheDocument()
     })
 })

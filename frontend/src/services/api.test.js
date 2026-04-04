@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
     authAPI,
+    moodAPI,
     clearStoredToken,
     getStoredToken,
     setStoredToken,
@@ -52,5 +53,24 @@ describe('auth API client', () => {
 
         clearStoredToken()
         expect(getStoredToken()).toBeNull()
+    })
+
+    it('should call mood history endpoint with query params and auth token', async () => {
+        setStoredToken('jwt-token')
+        const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true, data: { weeklyBreakdown: { days: [] } } }),
+        })
+
+        await moodAPI.history({ limit: 30, offset: 0, timezone: 'Europe/Istanbul' })
+
+        expect(fetchSpy).toHaveBeenCalledWith(
+            '/api/mood/history?limit=30&offset=0&timezone=Europe%2FIstanbul',
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: 'Bearer jwt-token',
+                }),
+            }),
+        )
     })
 })

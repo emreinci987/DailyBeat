@@ -55,6 +55,16 @@ function createMoodQuery(state = {}) {
             filters.forEach(({ field, op, value }) => {
                 if (op === '==') {
                     rows = rows.filter(row => row.data[field] === value);
+                    return;
+                }
+
+                if (op === '>=') {
+                    rows = rows.filter(row => (row.data[field] || '') >= value);
+                    return;
+                }
+
+                if (op === '<=') {
+                    rows = rows.filter(row => (row.data[field] || '') <= value);
                 }
             });
 
