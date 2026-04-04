@@ -8,7 +8,7 @@
 
 .app-layout__content {
     flex: 1;
-    margin-left: 68px;
+    margin-left: 88px;
     min-height: 100vh;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
