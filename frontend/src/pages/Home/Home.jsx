@@ -40,15 +40,6 @@ function Home() {
 
                 {/* Quick actions */}
                 <div className="home-actions">
-                    <Link to="/app/mood" className="home-action-card">
-                        <div className="home-action-card__icon home-action-card__icon--purple">🎭</div>
-                        <div className="home-action-card__info">
-                            <div className="home-action-card__title">Duygu Seç</div>
-                            <div className="home-action-card__desc">Ruh halini belirle</div>
-                        </div>
-                        <span className="home-action-card__arrow">→</span>
-                    </Link>
-
                     <Link to="/app/recommend" className="home-action-card">
                         <div className="home-action-card__icon home-action-card__icon--gradient">🎶</div>
                         <div className="home-action-card__info">

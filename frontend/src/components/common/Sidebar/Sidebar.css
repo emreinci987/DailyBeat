@@ -15,7 +15,6 @@
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
 }
 
 .sidebar--expanded {
@@ -33,6 +32,8 @@
     cursor: pointer;
     transition: background var(--transition-fast);
     flex-shrink: 0;
+    overflow: hidden;
+    text-decoration: none;
 }
 
 .sidebar__brand:hover {
@@ -77,6 +78,10 @@
     padding: 12px 8px;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.sidebar__nav::-webkit-scrollbar {
+    width: 0;
 }
 
 .sidebar__nav-link {
@@ -202,11 +207,11 @@
 .sidebar__toggle {
     position: absolute;
     top: 18px;
-    right: -14px;
+    right: 8px;
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--bg-dark);
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--glass-border);
     color: var(--text-muted);
     display: flex;
@@ -215,7 +220,6 @@
     cursor: pointer;
     z-index: 101;
     transition: all var(--transition-fast);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar__toggle:hover {

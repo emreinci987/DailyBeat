@@ -3,7 +3,6 @@ import useAuth from './hooks/useAuth'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import Home from './pages/Home/Home'
-import EmotionPage from './pages/MoodPicker/EmotionPage'
 import SuggestionsPage from './pages/Recommendations/SuggestionsPage'
 import HistoryPage from './pages/History/HistoryPage'
 import DiscoveryPage from './pages/Discovery/DiscoveryPage'
@@ -50,7 +49,7 @@ function App() {
                 )}
             >
                 <Route index element={<Home />} />
-                <Route path="mood" element={<EmotionPage />} />
+
                 <Route path="suggestions" element={<SuggestionsPage />} />
                 <Route path="history" element={<HistoryPage />} />
                 <Route path="discovery" element={<DiscoveryPage />} />

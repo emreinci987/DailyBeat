@@ -154,9 +154,9 @@ function ProfilePage() {
                     {/* Actions Card */}
                     {!isLoading && !error && (
                         <div className="prof-actions-card">
-                            <Link to="/app/mood" className="prof-action-btn">
-                                <span className="prof-action-btn__icon">🎭</span>
-                                <span className="prof-action-btn__text">Duygu Seç</span>
+                            <Link to="/app/recommend" className="prof-action-btn">
+                                <span className="prof-action-btn__icon">🎶</span>
+                                <span className="prof-action-btn__text">Duygu & Öneri</span>
                                 <span className="prof-action-btn__arrow">→</span>
                             </Link>
                             <Link to="/app/suggestions" className="prof-action-btn">

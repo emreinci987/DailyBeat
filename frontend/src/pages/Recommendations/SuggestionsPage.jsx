@@ -113,7 +113,7 @@ function SuggestionsPage() {
                         <div className="sug-empty">
                             <span className="sug-empty__icon">🎵</span>
                             <p>Henüz öneri bulunamadı. Farklı bir duygu deneyin!</p>
-                            <Link to="/app/mood" className="sug-empty__back">Duygu Seç</Link>
+                            <Link to="/app/recommend" className="sug-empty__back">Duygu & Öneri</Link>
                         </div>
                     ) : (
                         <div className="sug-song-list">
@@ -154,8 +154,8 @@ function SuggestionsPage() {
                 {/* Actions footer */}
                 {!isLoading && songs.length > 0 && (
                     <div className="sug-actions">
-                        <Link to="/app/mood" className="sug-action-btn sug-action-btn--secondary">
-                            🔄 Yeni Duygu Seç
+                        <Link to="/app/recommend" className="sug-action-btn sug-action-btn--secondary">
+                            🔄 Yeni Duygu & Öneri
                         </Link>
                         <Link to="/app" className="sug-action-btn sug-action-btn--primary">
                             🏠 Ana Sayfaya Dön

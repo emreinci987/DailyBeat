@@ -5,7 +5,6 @@ import './Sidebar.css'
 
 const NAV_ITEMS = [
     { to: '/app',           icon: '🏠', label: 'Ana Sayfa',     exact: true },
-    { to: '/app/mood',      icon: '🎭', label: 'Duygu Seç' },
     { to: '/app/recommend', icon: '🎶', label: 'Duygu & Öneri' },
     { to: '/app/suggestions', icon: '🎵', label: 'Öneriler' },
     { divider: true },
