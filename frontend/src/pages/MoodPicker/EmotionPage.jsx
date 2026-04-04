@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useAuth from '../../hooks/useAuth'
 import { moodAPI } from '../../services/api'
 import './EmotionPage.css'
 
@@ -17,7 +16,6 @@ const MOODS = [
 ]
 
 function EmotionPage() {
-    const { user, logout } = useAuth()
     const navigate = useNavigate()
     const [selectedMood, setSelectedMood] = useState(null)
     const [intensity, setIntensity] = useState(5)
@@ -71,29 +69,6 @@ function EmotionPage() {
                 <span className="em-note em-note--3">♩</span>
                 <span className="em-note em-note--4">♬</span>
             </div>
-
-            {/* Header */}
-            <header className="emotion-header">
-                <div className="emotion-header__brand">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-                        <circle cx="24" cy="24" r="22" stroke="url(#emBrandGrad)" strokeWidth="2.5" />
-                        <path d="M18 32V18l16-4v14" stroke="url(#emBrandGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="15" cy="32" r="3" fill="url(#emBrandGrad)" />
-                        <circle cx="31" cy="28" r="3" fill="url(#emBrandGrad)" />
-                        <defs>
-                            <linearGradient id="emBrandGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#A78BFA" />
-                                <stop offset="1" stopColor="#EC4899" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span className="emotion-header__title">Daily<span>Beat</span></span>
-                </div>
-                <div className="emotion-header__user">
-                    <span className="emotion-header__greeting">Merhaba, {user?.displayName || 'Kullanıcı'}</span>
-                    <button className="emotion-header__logout" onClick={logout} type="button">Çıkış</button>
-                </div>
-            </header>
 
             {/* Main content */}
             <main className="emotion-main">

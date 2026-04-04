@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import useAuth from '../../hooks/useAuth'
 import { moodAPI, recommendationAPI } from '../../services/api'
 import './SongRecommendPage.css'
 
@@ -17,7 +16,6 @@ const MOODS = [
 ]
 
 function SongRecommendPage() {
-    const { logout } = useAuth()
 
     // Step 1: emotion selection
     const [selectedMood, setSelectedMood] = useState(null)
@@ -99,33 +97,6 @@ function SongRecommendPage() {
                 <span className="rec-note rec-note--4">♬</span>
             </div>
 
-            {/* Header */}
-            <header className="rec-header">
-                <div className="rec-header__brand">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-                        <circle cx="24" cy="24" r="22" stroke="url(#recBrandGrad)" strokeWidth="2.5" />
-                        <path d="M18 32V18l16-4v14" stroke="url(#recBrandGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="15" cy="32" r="3" fill="url(#recBrandGrad)" />
-                        <circle cx="31" cy="28" r="3" fill="url(#recBrandGrad)" />
-                        <defs>
-                            <linearGradient id="recBrandGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#A78BFA" />
-                                <stop offset="1" stopColor="#EC4899" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span className="rec-header__title">Daily<span>Beat</span></span>
-                </div>
-                <div className="rec-header__actions">
-                    <Link to="/app" className="rec-header__back">
-                        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
-                            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                        </svg>
-                        Ana Sayfa
-                    </Link>
-                    <button className="rec-header__logout" onClick={logout} type="button">Çıkış</button>
-                </div>
-            </header>
 
             {/* Main */}
             <main className="rec-main">
