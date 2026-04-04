@@ -10,6 +10,7 @@ import DiscoveryPage from './pages/Discovery/DiscoveryPage'
 import ProfilePage from './pages/Profile/ProfilePage'
 import SongRecommendPage from './pages/SongRecommend/SongRecommendPage'
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute'
+import AppLayout from './components/common/AppLayout/AppLayout'
 
 function AuthRedirect({ children }) {
     const { isAuthenticated, isLoading } = useAuth()
@@ -38,62 +39,25 @@ function App() {
                     </AuthRedirect>
                 )}
             />
+
+            {/* Protected app routes — wrapped with sidebar layout */}
             <Route
                 path="/app"
                 element={(
                     <ProtectedRoute>
-                        <Home />
+                        <AppLayout />
                     </ProtectedRoute>
                 )}
-            />
-            <Route
-                path="/app/mood"
-                element={(
-                    <ProtectedRoute>
-                        <EmotionPage />
-                    </ProtectedRoute>
-                )}
-            />
-            <Route
-                path="/app/suggestions"
-                element={(
-                    <ProtectedRoute>
-                        <SuggestionsPage />
-                    </ProtectedRoute>
-                )}
-            />
-            <Route
-                path="/app/history"
-                element={(
-                    <ProtectedRoute>
-                        <HistoryPage />
-                    </ProtectedRoute>
-                )}
-            />
-            <Route
-                path="/app/discovery"
-                element={(
-                    <ProtectedRoute>
-                        <DiscoveryPage />
-                    </ProtectedRoute>
-                )}
-            />
-            <Route
-                path="/app/profile"
-                element={(
-                    <ProtectedRoute>
-                        <ProfilePage />
-                    </ProtectedRoute>
-                )}
-            />
-            <Route
-                path="/app/recommend"
-                element={(
-                    <ProtectedRoute>
-                        <SongRecommendPage />
-                    </ProtectedRoute>
-                )}
-            />
+            >
+                <Route index element={<Home />} />
+                <Route path="mood" element={<EmotionPage />} />
+                <Route path="suggestions" element={<SuggestionsPage />} />
+                <Route path="history" element={<HistoryPage />} />
+                <Route path="discovery" element={<DiscoveryPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="recommend" element={<SongRecommendPage />} />
+            </Route>
+
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
     )
