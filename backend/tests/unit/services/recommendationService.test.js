@@ -2,12 +2,14 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 // ── Mocks ──
 const mockGetSpotifyRecommendations = jest.fn();
+const mockSearchSpotifyTracks = jest.fn();
 const mockSearchYouTubeVideos = jest.fn();
 const mockCreatePlaylist = jest.fn();
 const mockLogger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
 
 jest.unstable_mockModule('../../../src/services/music/musicService.js', () => ({
     getSpotifyRecommendations: mockGetSpotifyRecommendations,
+    searchSpotifyTracks: mockSearchSpotifyTracks,
     searchYouTubeVideos: mockSearchYouTubeVideos,
 }));
 
@@ -23,6 +25,7 @@ const { getRecommendations, getDiscovery } =
 
 beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchSpotifyTracks.mockResolvedValue([]);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -45,7 +48,10 @@ describe('getRecommendations', () => {
         expect(mockGetSpotifyRecommendations).toHaveBeenCalledWith(
             expect.objectContaining({ seed_genres: expect.any(String) }),
         );
-        expect(result.songs).toEqual(spotifySongs);
+        expect(result.songs[0]).toEqual(expect.objectContaining({
+            title: 'Spotify Song',
+            links: expect.objectContaining({ spotify: 'https://spotify.com/1' }),
+        }));
         expect(result.playlist).toBeNull();
     });
 
@@ -59,15 +65,27 @@ describe('getRecommendations', () => {
         expect(mockLogger.warn).toHaveBeenCalled();
     });
 
-    it('should supplement with YouTube when Spotify returns fewer than limit', async () => {
+    it('should supplement with Spotify search when recommendations are fewer than limit', async () => {
         mockGetSpotifyRecommendations.mockResolvedValue(spotifySongs);
-        mockSearchYouTubeVideos.mockResolvedValue(ytSongs);
+        mockSearchSpotifyTracks.mockResolvedValue([
+            { title: 'Spotify Song 2', artist: 'SB', url: 'https://spotify.com/2', source: 'spotify' },
+        ]);
 
-        const result = await getRecommendations('calm', { limit: 5 });
+        const result = await getRecommendations('calm', { limit: 2 });
 
         expect(result.songs.length).toBe(2);
-        expect(result.songs[0].source).toBe('spotify');
-        expect(result.songs[1].source).toBe('youtube');
+        expect(mockSearchSpotifyTracks).toHaveBeenCalled();
+        expect(result.songs.every((song) => song.links?.spotify)).toBe(true);
+    });
+
+    it('should always return exactly requested limit when Spotify has sparse results', async () => {
+        mockGetSpotifyRecommendations.mockResolvedValue(spotifySongs);
+        mockSearchSpotifyTracks.mockResolvedValue([]);
+
+        const result = await getRecommendations('happy', { limit: 10 });
+
+        expect(result.songs).toHaveLength(10);
+        expect(result.songs.every((song) => song.links?.spotify)).toBe(true);
     });
 
     it('should save playlist when save=true and userId provided', async () => {
@@ -87,6 +105,19 @@ describe('getRecommendations', () => {
         expect(result.playlist.id).toBe('pl-1');
     });
 
+    it('should vary Spotify seed with intensity', async () => {
+        mockGetSpotifyRecommendations.mockResolvedValue(spotifySongs);
+
+        await getRecommendations('happy', { limit: 1, intensity: 9 });
+
+        expect(mockGetSpotifyRecommendations).toHaveBeenCalledWith(
+            expect.objectContaining({
+                target_energy: expect.any(Number),
+                target_valence: expect.any(Number),
+            }),
+        );
+    });
+
     it('should NOT save playlist when save=false', async () => {
         mockGetSpotifyRecommendations.mockResolvedValue(spotifySongs);
 
@@ -101,7 +132,11 @@ describe('getRecommendations', () => {
         const result = await getRecommendations('unknown-mood', { limit: 1 });
 
         expect(mockGetSpotifyRecommendations).toHaveBeenCalled();
-        expect(result.songs).toContainEqual(spotifySongs[0]);
+        expect(result.songs[0]).toEqual(expect.objectContaining({
+            title: spotifySongs[0].title,
+            artist: spotifySongs[0].artist,
+            links: expect.objectContaining({ spotify: spotifySongs[0].url }),
+        }));
     });
 });
 

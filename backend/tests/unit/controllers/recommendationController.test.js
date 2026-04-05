@@ -36,6 +36,7 @@ describe('recommendationController.getRecommendations', () => {
         await getRecommendations(req, res, next);
 
         expect(mockGetRecommendations).toHaveBeenCalledWith('happy', {
+            intensity: 5,
             limit: 5,
             save: false,
             userId: 'user-1',
@@ -50,6 +51,7 @@ describe('recommendationController.getRecommendations', () => {
         await getRecommendations(req, res, next);
 
         expect(mockGetRecommendations).toHaveBeenCalledWith('sad', {
+            intensity: 5,
             limit: 10,
             save: false,
             userId: 'user-1',

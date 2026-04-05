@@ -40,6 +40,7 @@ export const recommendationSchema = Joi.object({
     mood: Joi.string()
         .valid(...availableMoods)
         .required(),
+    intensity: Joi.number().integer().min(1).max(10).default(5),
     limit: Joi.number().integer().min(1).max(50).default(10),
     save: Joi.boolean().default(false),
 });

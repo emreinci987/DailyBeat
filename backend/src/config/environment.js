@@ -5,6 +5,12 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+function cleanedEnv(name, fallback = '') {
+    const raw = process.env[name];
+    if (raw === undefined || raw === null) return fallback;
+    return String(raw).trim();
+}
+
 const environment = {
     nodeEnv: process.env.NODE_ENV || 'development',
     port: parseInt(process.env.PORT, 10) || 3001,
@@ -19,21 +25,21 @@ const environment = {
 
     // Firebase Client (exposed to frontend via /api/config/firebase)
     firebaseClient: {
-        apiKey: process.env.FIREBASE_API_KEY || '',
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
-        projectId: process.env.FIREBASE_PROJECT_ID || '',
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-        appId: process.env.FIREBASE_APP_ID || '',
+        apiKey: cleanedEnv('FIREBASE_API_KEY'),
+        authDomain: cleanedEnv('FIREBASE_AUTH_DOMAIN'),
+        projectId: cleanedEnv('FIREBASE_PROJECT_ID'),
+        storageBucket: cleanedEnv('FIREBASE_STORAGE_BUCKET'),
+        messagingSenderId: cleanedEnv('FIREBASE_MESSAGING_SENDER_ID'),
+        appId: cleanedEnv('FIREBASE_APP_ID'),
     },
 
     // External APIs
     spotify: {
-        clientId: process.env.SPOTIFY_CLIENT_ID || '',
-        clientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
+        clientId: cleanedEnv('SPOTIFY_CLIENT_ID'),
+        clientSecret: cleanedEnv('SPOTIFY_CLIENT_SECRET'),
     },
     youtube: {
-        apiKey: process.env.YOUTUBE_API_KEY || '',
+        apiKey: cleanedEnv('YOUTUBE_API_KEY'),
     },
 
     // CORS
