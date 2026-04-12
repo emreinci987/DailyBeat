@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import useAuth from './hooks/useAuth'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
+import ForgotPassword from './pages/Auth/ForgotPassword'
 import Home from './pages/Home/Home'
 import SuggestionsPage from './pages/Recommendations/SuggestionsPage'
 import HistoryPage from './pages/History/HistoryPage'
@@ -35,6 +36,14 @@ function App() {
                 element={(
                     <AuthRedirect>
                         <Register />
+                    </AuthRedirect>
+                )}
+            />
+            <Route
+                path="/forgot-password"
+                element={(
+                    <AuthRedirect>
+                        <ForgotPassword />
                     </AuthRedirect>
                 )}
             />
