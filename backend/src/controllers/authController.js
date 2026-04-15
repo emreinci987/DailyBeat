@@ -280,4 +280,47 @@ export async function getMe(req, res, next) {
     }
 }
 
-export default { register, login, getMe };
+/**
+ * POST /api/auth/forgot-password
+ * Body: { email }
+ */
+export async function forgotPassword(req, res, next) {
+    try {
+        const apiKey = environment.firebaseClient.apiKey;
+
+        if (!apiKey) {
+            return errorResponse(res, 'Firebase yapılandırması eksik', 503);
+        }
+
+        const { email } = req.body;
+
+        const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestType: 'PASSWORD_RESET', email }),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const detail = payload?.error?.message || 'UNKNOWN';
+
+            // Don't reveal whether the email exists or not (security best practice)
+            if (detail === 'EMAIL_NOT_FOUND') {
+                logger.info('Password reset requested for non-existent email', { email });
+                return successResponse(res, null, 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi');
+            }
+
+            logger.error('Password reset failed', { detail });
+            return errorResponse(res, 'Şifre sıfırlama işlemi başarısız oldu', 400);
+        }
+
+        logger.info('Password reset email sent', { email });
+        return successResponse(res, null, 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi');
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export default { register, login, getMe, forgotPassword };

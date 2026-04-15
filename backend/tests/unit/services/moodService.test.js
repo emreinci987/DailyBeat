@@ -2,6 +2,7 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 const mockCreateMoodEntry = jest.fn();
 const mockGetMoodEntriesByUser = jest.fn();
+const mockGetMoodEntriesSince = jest.fn();
 const mockGetMoodStats = jest.fn();
 const mockGetMoodEntryById = jest.fn();
 const mockDeleteMoodEntry = jest.fn();
@@ -10,6 +11,7 @@ jest.unstable_mockModule('../../../src/models/MoodEntry.js', () => ({
     default: {
         createMoodEntry: mockCreateMoodEntry,
         getMoodEntriesByUser: mockGetMoodEntriesByUser,
+        getMoodEntriesSince: mockGetMoodEntriesSince,
         getMoodStats: mockGetMoodStats,
         getMoodEntryById: mockGetMoodEntryById,
         deleteMoodEntry: mockDeleteMoodEntry,
@@ -19,6 +21,7 @@ jest.unstable_mockModule('../../../src/models/MoodEntry.js', () => ({
 const {
     recordMood,
     getUserMoodHistory,
+    getRecentMoodEntries,
     getUserMoodStats,
     removeMoodEntry,
 } = await import('../../../src/services/mood/moodService.js');
@@ -55,6 +58,34 @@ describe('moodService', () => {
         expect(result.total).toBe(1);
     });
 
+    it('getRecentMoodEntries should call model with computed since date', async () => {
+        mockGetMoodEntriesSince.mockResolvedValue([{ id: 'm1' }]);
+
+        const result = await getRecentMoodEntries('u1', { lookbackDays: 8 });
+
+        expect(mockGetMoodEntriesSince).toHaveBeenCalledTimes(1);
+        expect(mockGetMoodEntriesSince).toHaveBeenCalledWith('u1', expect.any(String));
+        expect(new Date(mockGetMoodEntriesSince.mock.calls[0][1]).toString()).not.toBe('Invalid Date');
+        expect(result).toEqual([{ id: 'm1' }]);
+    });
+
+    it('getRecentMoodEntries should fallback to getMoodEntriesByUser when range query fails', async () => {
+        const now = new Date().toISOString();
+        const old = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
+
+        mockGetMoodEntriesSince.mockRejectedValue(new Error('index missing'));
+        mockGetMoodEntriesByUser.mockResolvedValue([
+            { id: 'm1', createdAt: now },
+            { id: 'm2', createdAt: old },
+            { id: 'm3', createdAt: 'invalid' },
+        ]);
+
+        const result = await getRecentMoodEntries('u1', { lookbackDays: 8 });
+
+        expect(mockGetMoodEntriesByUser).toHaveBeenCalledWith('u1', { limit: 500, offset: 0 });
+        expect(result.map((entry) => entry.id)).toEqual(['m1']);
+    });
+
     it('removeMoodEntry should return null when entry not found', async () => {
         mockGetMoodEntryById.mockResolvedValue(null);
 
@@ -82,7 +113,7 @@ describe('moodService', () => {
 
         const result = await removeMoodEntry('m1', 'u1');
 
-        expect(mockDeleteMoodEntry).toHaveBeenCalledWith('m1');
+        expect(mockDeleteMoodEntry).toHaveBeenCalledWith('m1', 'u1');
         expect(result).toEqual(entry);
     });
 });

@@ -16,6 +16,16 @@ function applyQuery(collectionData, queryState) {
     queryState.filters.forEach(({ field, op, value }) => {
         if (op === '==') {
             rows = rows.filter((row) => row.data[field] === value);
+            return;
+        }
+
+        if (op === '>=') {
+            rows = rows.filter((row) => (row.data[field] || '') >= value);
+            return;
+        }
+
+        if (op === '<=') {
+            rows = rows.filter((row) => (row.data[field] || '') <= value);
         }
     });
 
@@ -239,6 +249,56 @@ describe('GET /api/mood/history (auth required)', () => {
         expect(Array.isArray(res.body.data.history)).toBe(true);
         expect(res.body.data.history[0].timestamp).toBeDefined();
         expect(res.body.data.history[0].mood).toBe('happy');
+        expect(res.body.data.weeklyBreakdown).toBeDefined();
+        expect(res.body.data.weeklyBreakdown.days).toHaveLength(7);
+    });
+
+    it('should include weekly mood counts grouped day by day', async () => {
+        const now = Date.now();
+        moodEntries.set('manual-1', {
+            userId: 'test-uid',
+            mood: 'happy',
+            intensity: 8,
+            note: 'first',
+            createdAt: new Date(now - 60 * 60 * 1000).toISOString(),
+        });
+        moodEntries.set('manual-2', {
+            userId: 'test-uid',
+            mood: 'happy',
+            intensity: 6,
+            note: 'second',
+            createdAt: new Date(now - 30 * 60 * 1000).toISOString(),
+        });
+        moodEntries.set('manual-3', {
+            userId: 'test-uid',
+            mood: 'sad',
+            intensity: 3,
+            note: 'third',
+            createdAt: new Date(now - 20 * 60 * 1000).toISOString(),
+        });
+
+        const res = await request(app)
+            .get('/api/mood/history?timezone=UTC')
+            .set('Authorization', 'Bearer valid-token');
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.weeklyBreakdown.period.timezone).toBe('UTC');
+        expect(res.body.data.weeklyBreakdown.days).toHaveLength(7);
+
+        const today = res.body.data.weeklyBreakdown.days[6];
+        expect(today.totalEntries).toBeGreaterThanOrEqual(3);
+        expect(today.moodCounts.happy).toBeGreaterThanOrEqual(2);
+        expect(today.moodCounts.sad).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return 400 for invalid timezone query', async () => {
+        const res = await request(app)
+            .get('/api/mood/history?timezone=invalid/timezone')
+            .set('Authorization', 'Bearer valid-token');
+
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
     });
 });
 

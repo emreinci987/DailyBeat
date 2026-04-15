@@ -21,6 +21,11 @@ const PLACEHOLDER_SONGS = [
     { id: '1', title: 'Yükleniyor...', artist: 'Öneriler hazırlanıyor', url: '#', source: 'spotify' },
 ]
 
+function getSpotifyAppUrl(spotifyUrl) {
+    const match = spotifyUrl?.match(/track\/([a-zA-Z0-9]+)/)
+    return match ? `spotify:track:${match[1]}` : null
+}
+
 function SuggestionsPage() {
     const { user, logout } = useAuth()
     const navigate = useNavigate()
@@ -59,20 +64,43 @@ function SuggestionsPage() {
         return () => { cancelled = true }
     }, [mood, intensity])
 
-    const getSourceIcon = (source) => {
-        if (source === 'youtube') {
-            return (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="#FF0000">
-                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
-            )
+    const openSpotify = (song) => {
+        const spotifyUrl = song.links?.spotify || (song.source === 'spotify' ? song.url : null)
+        if (!spotifyUrl) return
+
+        const appUrl = song.spotifyAppUrl || getSpotifyAppUrl(spotifyUrl)
+        if (!appUrl) {
+            window.open(spotifyUrl, '_blank', 'noopener,noreferrer')
+            return
         }
-        return (
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="#1DB954">
-                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-            </svg>
-        )
+
+        let pageHidden = false
+        const onVisibilityChange = () => {
+            if (document.hidden) pageHidden = true
+        }
+
+        document.addEventListener('visibilitychange', onVisibilityChange)
+        window.location.href = appUrl
+
+        window.setTimeout(() => {
+            document.removeEventListener('visibilitychange', onVisibilityChange)
+            if (!pageHidden) {
+                window.open(spotifyUrl, '_blank', 'noopener,noreferrer')
+            }
+        }, 900)
     }
+
+    const spotifyIcon = (
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#1DB954">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+        </svg>
+    )
+
+    const youtubeIcon = (
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#FF0000">
+            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+        </svg>
+    )
 
     return (
         <div className="suggestions-page" style={{ '--mood-color': moodInfo.color }}>
@@ -146,36 +174,59 @@ function SuggestionsPage() {
                         </div>
                     ) : (
                         <div className="sug-song-list">
-                            {songs.map((song, index) => (
-                                <a
-                                    key={song.id || index}
-                                    href={song.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="sug-song-card"
-                                    style={{ animationDelay: `${index * 0.08}s` }}
-                                >
-                                    <div className="sug-song-card__index">{index + 1}</div>
-                                    {song.thumbnailUrl && (
-                                        <img
-                                            className="sug-song-card__thumb"
-                                            src={song.thumbnailUrl}
-                                            alt={song.title}
-                                            loading="lazy"
-                                        />
-                                    )}
-                                    <div className="sug-song-card__info">
-                                        <span className="sug-song-card__title">{song.title}</span>
-                                        <span className="sug-song-card__artist">{song.artist}</span>
+                            {songs.map((song, index) => {
+                                const spotifyUrl = song.links?.spotify || (song.source === 'spotify' ? song.url : null)
+                                const youtubeUrl = song.links?.youtube || null
+
+                                return (
+                                    <div
+                                        key={song.id || index}
+                                        className="sug-song-card"
+                                        style={{ animationDelay: `${index * 0.08}s` }}
+                                    >
+                                        <div className="sug-song-card__index">{index + 1}</div>
+                                        {song.thumbnailUrl && (
+                                            <img
+                                                className="sug-song-card__thumb"
+                                                src={song.thumbnailUrl}
+                                                alt={song.title}
+                                                loading="lazy"
+                                            />
+                                        )}
+                                        <div className="sug-song-card__info">
+                                            <span className="sug-song-card__title">{song.title}</span>
+                                            <span className="sug-song-card__artist">{song.artist}</span>
+                                        </div>
+
+                                        <div className="sug-song-card__actions">
+                                            {spotifyUrl && (
+                                                <button
+                                                    type="button"
+                                                    className="sug-song-card__action-btn"
+                                                    onClick={() => openSpotify(song)}
+                                                    aria-label="Spotify'da aç"
+                                                    title="Spotify'da aç"
+                                                >
+                                                    {spotifyIcon}
+                                                </button>
+                                            )}
+
+                                            {youtubeUrl && (
+                                                <a
+                                                    href={youtubeUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="sug-song-card__action-btn"
+                                                    aria-label="YouTube'da aç"
+                                                    title="YouTube'da aç"
+                                                >
+                                                    {youtubeIcon}
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="sug-song-card__source">
-                                        {getSourceIcon(song.source)}
-                                    </div>
-                                    <svg className="sug-song-card__play" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                                    </svg>
-                                </a>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
                 </div>

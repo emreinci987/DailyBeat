@@ -24,6 +24,13 @@ export const loginSchema = Joi.object({
     }),
 });
 
+export const forgotPasswordSchema = Joi.object({
+    email: Joi.string().email().required().messages({
+        'string.email': 'Geçerli bir e-posta adresi giriniz',
+        'any.required': 'E-posta adresi gereklidir',
+    }),
+});
+
 export const moodSchema = Joi.object({
     mood: Joi.string()
         .valid(...availableMoods)
@@ -40,6 +47,7 @@ export const recommendationSchema = Joi.object({
     mood: Joi.string()
         .valid(...availableMoods)
         .required(),
+    intensity: Joi.number().integer().min(1).max(10).default(5),
     limit: Joi.number().integer().min(1).max(50).default(10),
     save: Joi.boolean().default(false),
 });

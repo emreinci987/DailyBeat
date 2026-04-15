@@ -217,7 +217,7 @@ function Login() {
                                     <span className="checkbox-custom"></span>
                                     <span className="checkbox-label">Beni hatırla</span>
                                 </label>
-                                <a href="#" className="forgot-link">Şifremi unuttum</a>
+                                <Link to="/forgot-password" className="forgot-link">Şifremi unuttum</Link>
                             </div>
 
                             <button
